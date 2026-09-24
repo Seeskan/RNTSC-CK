@@ -84,12 +84,36 @@ function showSaveMessage(text,ok){let m=$('#saveMessage');m.textContent=text;m.s
 function saveDeclaration(){try{let form=$('#form');if(!form.checkValidity()){form.reportValidity();showSaveMessage('Compléter les champs obligatoires avant l’enregistrement.',false);return false}let loc=selected();if(!loc){showSaveMessage('La localisation doit être complète.',false);alert('La localisation doit être complète.');return false}let fd=new FormData(form),o=Object.fromEntries(fd.entries());if(o.confirmed==='doubt'&&!confirm('La confirmation sans consignation n’est pas obtenue. Enregistrer comme BLOQUÉ ?'))return false;Object.assign(o,loc);o.risks=fd.getAll('risks');o.id=(window.crypto&&typeof window.crypto.randomUUID==='function')?window.crypto.randomUUID():String(Date.now());o.number='TSC-'+new Date().getFullYear()+'-'+String(W.length+1).padStart(4,'0');o.status=o.confirmed==='yes'?'Actif':'Bloqué';o.created=new Date().toISOString();W.push(o);save();showSaveMessage(o.number+' enregistré avec succès : '+o.status,true);alert(o.number+' enregistré avec succès : '+o.status);form.reset();workshopChange();setTimeout(()=>$$('.nav button')[0].click(),100);return false}catch(err){console.error('RNTSC save error',err);showSaveMessage('Échec de l’enregistrement : '+(err&&err.message?err.message:'erreur inconnue'),false);alert('Échec de l’enregistrement. Consultez le message affiché sous le formulaire.');return false}}
 $('#saveBtn').addEventListener('click',saveDeclaration);$('#form').addEventListener('submit',e=>{e.preventDefault();e.stopPropagation();return false});
 $$('.nav button').forEach(b=>b.onclick=()=>{$$('.nav button').forEach(x=>x.classList.remove('active'));b.classList.add('active');$$('.screen').forEach(x=>x.classList.remove('active'));$('#'+b.dataset.s).classList.add('active');renderAll()});
-$('#export').onclick=()=>{let h=['Numero','Statut','Entreprise','Responsable','Centralisateur','Donneur ordre','Travaux','Atelier','Zone principale','Code localisation','Localisation complète','Effectif','Debut','Fin','Risques','Reference','Commentaires'],d=[h,...W.map(x=>[x.number,x.status,x.company,x.manager,x.centralizer,x.requester,x.work,x.workshop,x.zoneName,x.locationCode,x.path,x.headcount,x.start,x.end,x.risks.join('|'),x.reference,x.notes])],csv=d.map(r=>r.map(v=>'"'+String(v??'').replaceAll('"','""')+'"').join(';')).join('\n'),a=document.createElement('a');a.href=URL.createObjectURL(new Blob(['\ufeff'+csv],{type:'text/csv'}));a.download='RNTSC_V2_export.csv';
-                          a.click()
-                         };
-
- a.download='RNTSC_V2_export.csv';
-a.click()
+$('#export').onclick=()=>{
+let h=['Numero','Statut','Entreprise','Responsable','Centralisateur','Donneur ordre','Travaux','Atelier','Zone principale','Code localisation','Localisation complète','Effectif','Debut','Fin','Risques','Reference','Commentaires'],
+d=[h,...W.map(x=>[
+x.number,
+x.status,
+x.company,
+x.manager,
+x.centralizer,
+x.requester,
+x.work,
+x.workshop,
+x.zoneName,
+x.locationCode,
+x.path,
+x.headcount,
+x.start,
+x.end,
+x.risks.join('|'),
+x.reference,
+x.notes
+])],
+csv=d.map(r=>r.map(v=>'"'+String(v??'').replaceAll('"','""')+'"').join(';')).join('\n'),
+a=document.createElement('a');
+ 
+a.href=URL.createObjectURL(
+new Blob(['\ufeff'+csv],{type:'text/csv'})
+);
+ 
+a.download='RNTSC_V2_export.csv';
+a.click();
 };
  
 async function testFirebase(){
@@ -106,13 +130,13 @@ message:'Test RNTSC'
 }
 );
  
-console.log('Firebase OK', await response.json());
+console.log('Firebase OK');
  
-} catch(err){
-console.error('Firebase KO', err);
+}catch(err){
+console.error('Firebase KO',err);
 }
 }
  
-testFirebase();   
-    init();
+testFirebase();
+init();
   </script></body></html>
